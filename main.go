@@ -249,8 +249,8 @@ func (cfg Config) validate() error {
 		return fmt.Errorf("no IpaPath nor PkgPath parameter specified")
 	}
 
-	if err := input.ValidateWithOptions(cfg.PilotAction, "upload", "distribute"); err != nil {
-		return fmt.Errorf("PilotAction, %s", err)
+	if cfg.PilotAction != "upload" && cfg.PilotAction != "distribute" {
+		return fmt.Errorf("PilotAction, %s invalid", cfg.PilotAction)
 	}
 
 	if cfg.BundleID == "" {

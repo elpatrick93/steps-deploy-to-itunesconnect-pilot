@@ -8,18 +8,18 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/bitrise-io/go-steputils/input"
+	"github.com/bitrise-io/go-steputils/command/gems"
+	"github.com/bitrise-io/go-steputils/command/rubycommand"
 	"github.com/bitrise-io/go-steputils/stepconf"
 	"github.com/bitrise-io/go-utils/command"
-	"github.com/bitrise-io/go-utils/command/gems"
-	"github.com/bitrise-io/go-utils/command/rubycommand"
 	"github.com/bitrise-io/go-utils/fileutil"
 	"github.com/bitrise-io/go-utils/log"
 	"github.com/bitrise-io/go-utils/pathutil"
 	"github.com/bitrise-io/go-utils/retry"
+	"github.com/bitrise-io/go-xcode/appleauth"
+	"github.com/bitrise-io/go-xcode/devportalservice"
+	"github.com/bitrise-io/go-xcode/utility"
 	"github.com/kballard/go-shellquote"
-	"github.com/wilcopots/steps-deploy-to-itunesconnect-pilot/appleauth"
-	"github.com/wilcopots/steps-deploy-to-itunesconnect-pilot/devportalservice"
 )
 
 // Config ...
@@ -390,9 +390,18 @@ alphanumeric characters.`)
 		options = opts
 	}
 
+	version, err := utility.GetXcodeVersion()
+	if err != nil {
+		fail("Failed to read Xcode version: %w", err)
+	}
+
 	envs := []string{}
-	if cfg.ITMSParameters != "" {
-		envs = append(envs, "DELIVER_ITMSTRANSPORTER_ADDITIONAL_UPLOAD_PARAMETERS="+cfg.ITMSParameters)
+	// Xcode 14 and above fastlane uses altool to upload
+	if version.MajorVersion < 14 {
+		envs = append(envs, "ITMSTRANSPORTER_FORCE_ITMS_PACKAGE_UPLOAD=true")
+		if cfg.ITMSParameters != "" {
+			envs = append(envs, "DELIVER_ITMSTRANSPORTER_ADDITIONAL_UPLOAD_PARAMETERS="+cfg.ITMSParameters)
+		}
 	}
 
 	args := []string{

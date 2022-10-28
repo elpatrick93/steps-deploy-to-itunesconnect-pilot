@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/bitrise-io/go-utils/pathutil"
-	"github.com/wilcopots/steps-deploy-to-itunesconnect-pilot/appleauth"
+	"github.com/bitrise-io/go-xcode/appleauth"
 )
 
 // fastlaneAPIKey is used to serialize App Store Connect API Key into JSON for fastlane
@@ -81,6 +81,11 @@ func FastlaneAuthParams(authConfig appleauth.Credentials) (FastlaneParams, error
 		args = append(args, Arg{
 			Key:   "--api_key_path",
 			Value: fastlaneAuthFile,
+		})
+		// deliver: "Precheck cannot check In-app purchases with the App Store Connect API Key (yet). Exclude In-app purchases from precheck"
+		args = append(args, Arg{
+			Key:   "--precheck_include_in_app_purchases",
+			Value: "false",
 		})
 	}
 
